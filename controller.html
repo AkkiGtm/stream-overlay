@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cricket Stream Overlay Controller & Studio Preview</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+    body { background: #0b1120; color: #f8fafc; padding: 20px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #1e293b; }
+    h1 { font-size: 22px; font-weight: 800; color: #f59e0b; }
+    .status-badge { background: #10b981; color: #022c22; font-weight: 700; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+
+    .main-grid { display: grid; grid-template-columns: 360px 1fr; gap: 24px; }
+
+    /* Left Control Sidebar */
+    .panel { background: #1e293b; border-radius: 10px; padding: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .panel-title { font-size: 14px; font-weight: 700; text-transform: uppercase; color: #94a3b8; margin-bottom: 12px; letter-spacing: 0.5px; }
+
+    .btn-group { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+    button {
+      background: #334155; color: #fff; border: none; padding: 10px 8px; border-radius: 6px;
+      font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;
+    }
+    button:hover { background: #475569; transform: translateY(-1px); }
+    button.btn-amber { background: #f59e0b; color: #0f172a; }
+    button.btn-amber:hover { background: #d97706; }
+    button.btn-red { background: #dc2626; color: #fff; }
+    button.btn-red:hover { background: #b91c1c; }
+    button.btn-blue { background: #2563eb; color: #fff; }
+    button.btn-purple { background: #7c3aed; color: #fff; }
+
+    .theme-picker { display: flex; gap: 8px; }
+    .theme-btn { flex: 1; padding: 8px; font-size: 12px; }
+    .theme-btn.active { border: 2px solid #f59e0b; }
+
+    input, select {
+      width: 100%; background: #0f172a; border: 1px solid #334155; color: #fff;
+      padding: 8px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 10px;
+    }
+
+    /* Right Preview Section */
+    .preview-section { display: flex; flex-direction: column; gap: 12px; }
+    .preview-header { display: flex; justify-content: space-between; align-items: center; }
+    .preview-container {
+      position: relative;
+      width: 100%;
+      height: 600px;
+      background: url('https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?q=80&w=1600&auto=format&fit=crop') center/cover no-repeat;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.8);
+    }
+    iframe { width: 100%; height: 100%; border: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>CRICKET STREAM STUDIO CONTROLLER</h1>
+      <small style="color: #64748b;">Live Simulator, Theme Switcher & Event Manager</small>
+    </div>
+    <div class="status-badge" id="status-tag">STATUS: LOCAL STUDIO ACTIVE</div>
+  </header>
+
+  <div class="main-grid">
+    <!-- Left: Controls -->
+    <div class="controls-col">
+      <!-- Theme Selection -->
+      <div class="panel">
+        <div class="panel-title">1. Broadcast Theme</div>
+        <div class="theme-picker">
+          <button class="theme-btn active" onclick="changeTheme('ipl')">IPL Modern</button>
+          <button class="theme-btn" onclick="changeTheme('neon')">Dark Neon</button>
+          <button class="theme-btn" onclick="changeTheme('classic')">Classic TV</button>
+        </div>
+      </div>
+
+      <!-- Quick Scoring Simulation -->
+      <div class="panel">
+        <div class="panel-title">2. Ball-by-Ball Simulator</div>
+        <div class="btn-group">
+          <button onclick="addRun(0)">0 (Dot)</button>
+          <button onclick="addRun(1)">+1 Run</button>
+          <button onclick="addRun(2)">+2 Runs</button>
+        </div>
+        <div class="btn-group">
+          <button class="btn-blue" onclick="addRun(4)">FOUR! (4)</button>
+          <button class="btn-purple" onclick="addRun(6)">SIX! (6)</button>
+          <button class="btn-red" onclick="triggerWicketEvent()">WICKET!</button>
+        </div>
+      </div>
+
+      <!-- Automated Triggers & Popups -->
+      <div class="panel">
+        <div class="panel-title">3. Test Broadcast Popups</div>
+        <button style="width:100%; margin-bottom:8px; background:#475569;" onclick="toggleUpcomingPreview()">
+          Toggle Center Match Preview Card
+        </button>
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <button style="flex:1;" class="btn-blue" onclick="triggerFourEvent()">
+            FOUR! Alert
+          </button>
+          <button style="flex:1;" class="btn-purple" onclick="triggerSixEvent()">
+            SIX! Alert
+          </button>
+        </div>
+        <button style="width:100%; margin-bottom:8px;" class="btn-amber" onclick="triggerOverEnd()">
+          End of Over Stats Popup
+        </button>
+        <button style="width:100%; margin-bottom:8px;" class="btn-blue" onclick="triggerScorecard()">
+          Team Scorecard (2nd-Over Popup)
+        </button>
+        <button style="width:100%;" class="btn-red" onclick="triggerWicketEvent()">
+          Wicket Alert + Replay Bug
+        </button>
+      </div>
+
+      <!-- CricHeroes Live Sync Config -->
+      <div class="panel">
+        <div class="panel-title">4. CricHeroes Connection</div>
+        <label style="font-size:11px; color:#94a3b8;">Match ID (Only numeric ID needed):</label>
+        <input type="text" id="ch-match-id" placeholder="e.g. 27909503 or 27924686">
+        <label style="font-size:11px; color:#94a3b8;">Proxy URL (leave blank for local):</label>
+        <input type="text" id="ch-proxy-url" placeholder="Default: /proxy">
+        <button class="btn-amber" style="width:100%; margin-bottom:8px;" onclick="connectCricHeroes()">Connect Match</button>
+        
+        <div style="font-size:11px; color:#94a3b8; margin: 8px 0 4px 0;">Quick Test Matches:</div>
+        <div style="display:flex; gap:6px;">
+          <button style="flex:1; font-size:11px; padding:6px 4px;" onclick="loadPresetMatch('27909503')">Upcoming</button>
+          <button style="flex:1; font-size:11px; padding:6px 4px;" onclick="loadPresetMatch('27924686')">Live Inning 2</button>
+          <button style="flex:1; font-size:11px; padding:6px 4px;" onclick="loadPresetMatch('demo')">Local Demo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Studio Live Preview -->
+    <div class="preview-section">
+      <div class="preview-header">
+        <span style="font-weight:700; font-size:13px; color:#94a3b8;">LIVE OUTPUT PREVIEW (16:9 Canvas)</span>
+        <a href="index.html" target="_blank" style="color:#f59e0b; font-size:13px; font-weight:700; text-decoration:none;">Open Clean Overlay In New Window &rarr;</a>
+      </div>
+      <div class="preview-container">
+        <iframe id="overlay-frame" src="index.html"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const iframe = document.getElementById('overlay-frame');
+
+    function changeTheme(themeName) {
+      document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      iframe.contentWindow.postMessage({ type: 'SET_THEME', theme: themeName }, '*');
+    }
+
+    function addRun(runs) {
+      const state = iframe.contentWindow.cricketOverlay.getState();
+      state.battingTeam.score += runs;
+      state.thisOver.push(runs === 0 ? "•" : String(runs));
+      // Update striker
+      state.batsmen[0].runs += runs;
+      state.batsmen[0].balls += 1;
+      if (runs === 4) state.batsmen[0].fours += 1;
+      if (runs === 6) state.batsmen[0].sixes += 1;
+
+      iframe.contentWindow.postMessage({ type: 'UPDATE_OVERLAY_STATE', state: state }, '*');
+
+      if (runs === 4) {
+        iframe.contentWindow.postMessage({ type: 'TRIGGER_FOUR', batsman: state.batsmen[0].name }, '*');
+      } else if (runs === 6) {
+        iframe.contentWindow.postMessage({ type: 'TRIGGER_SIX', batsman: state.batsmen[0].name }, '*');
+      }
+    }
+
+    function triggerFourEvent() {
+      iframe.contentWindow.postMessage({ type: 'TRIGGER_FOUR' }, '*');
+    }
+
+    function triggerSixEvent() {
+      iframe.contentWindow.postMessage({ type: 'TRIGGER_SIX' }, '*');
+    }
+
+    function toggleUpcomingPreview() {
+      if (!iframe.contentWindow || !iframe.contentWindow.cricketOverlay) return;
+      const state = iframe.contentWindow.cricketOverlay.getState();
+      state.isUpcoming = !state.isUpcoming;
+      if (state.isUpcoming) {
+        state.teamA = {
+          name: "Ocean Warriors",
+          shortName: "OW",
+          captain: "Auddii",
+          logo: "https://media.cricheroes.in/team_logo/1761759472924_CKpYufmc7X3X.jpeg"
+        };
+        state.teamB = {
+          name: "R10 ELEVENS",
+          shortName: "R10",
+          captain: "Shankar Rathod",
+          logo: "https://media.cricheroes.in/team_logo/1791812642205_kO8mwM1EI9f2.png"
+        };
+        state.tournament = "PRE-MATCH BROADCAST PREVIEW";
+        state.format = "16 OVERS • TENNIS BALL";
+        state.venue = "CSMCC CHANDKHED, PUNE";
+        state.startTime = "Today • 03:30 PM";
+        state.toss = "TOSS PENDING";
+        state.matchStatus = "MATCH STARTING SOON";
+      }
+      iframe.contentWindow.postMessage({ type: 'UPDATE_OVERLAY_STATE', state: state }, '*');
+    }
+
+    function triggerWicketEvent() {
+      iframe.contentWindow.postMessage({ type: 'TRIGGER_WICKET' }, '*');
+    }
+
+    function triggerOverEnd() {
+      iframe.contentWindow.postMessage({ type: 'TRIGGER_OVER_SUMMARY' }, '*');
+    }
+
+    function triggerScorecard() {
+      iframe.contentWindow.postMessage({ type: 'TRIGGER_SCORECARD' }, '*');
+    }
+
+    function loadPresetMatch(mid) {
+      document.getElementById('ch-match-id').value = mid;
+      connectCricHeroes();
+    }
+
+    function connectCricHeroes() {
+      const inputVal = document.getElementById('ch-match-id').value.trim();
+      let pUrl = document.getElementById('ch-proxy-url').value.trim() || '/proxy';
+      if (!inputVal) { alert("Please enter a valid CricHeroes Match ID, URL, or 'demo'."); return; }
+
+      // Extract numeric match ID for MQTT and preserve full URL for metadata scraper
+      const idMatch = inputVal.match(/\d{7,10}/);
+      const cleanId = idMatch ? idMatch[0] : inputVal;
+      const urlQuery = inputVal.startsWith('http') ? `&matchUrl=${encodeURIComponent(inputVal)}` : '';
+
+      iframe.src = `index.html?mode=live&matchId=${encodeURIComponent(cleanId)}${urlQuery}&proxyUrl=${encodeURIComponent(pUrl)}&t=${Date.now()}`;
+      document.getElementById('status-tag').innerText = `STATUS: CONNECTED TO MATCH ${cleanId}`;
+      document.getElementById('status-tag').style.background = '#10b981';
+    }
+  </script>
+</body>
+</html>

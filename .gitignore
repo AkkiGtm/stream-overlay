@@ -1,0 +1,10 @@
+# macOS system files
+.DS_Store
+
+# Temporary debug files
+cricheroes_debug.html
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
