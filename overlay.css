@@ -313,6 +313,7 @@ html, body {
   display: flex;
   gap: 5px;
   align-items: center;
+  min-height: 26px;
 }
 
 .ball-pill {
@@ -335,6 +336,13 @@ html, body {
 .ball-pill.six { background: #7c3aed; color: #fff; font-size: 15px; font-weight: 900; }
 .ball-pill.wicket { background: #dc2626; color: #fff; font-weight: 900; animation: pulseRed 1.5s infinite; }
 .ball-pill.extra { background: #ea580c; color: #fff; font-size: 11px; }
+.ball-pill.empty {
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.22);
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  font-size: 13px;
+  line-height: 1;
+}
 
 @keyframes pulseRed {
   0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }

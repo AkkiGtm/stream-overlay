@@ -92,6 +92,9 @@
           <button class="btn-purple" onclick="addRun(6)">SIX! (6)</button>
           <button class="btn-red" onclick="triggerWicketEvent()">WICKET!</button>
         </div>
+        <button style="width:100%; margin-top:8px; background:#334155; font-size:12px;" onclick="startNewOver()">
+          🔄 Start New Over (Clear Balls)
+        </button>
       </div>
 
       <!-- Automated Triggers & Popups -->
@@ -163,8 +166,26 @@
 
     function addRun(runs) {
       const state = iframe.contentWindow.cricketOverlay.getState();
+      if (!Array.isArray(state.thisOver)) state.thisOver = [];
+
+      // If previous over already finished (6 balls bowled), auto-clear for new over
+      if (state.thisOver.length >= 6) {
+        state.thisOver = [];
+      }
+
       state.battingTeam.score += runs;
       state.thisOver.push(runs === 0 ? "•" : String(runs));
+
+      // Increment overs
+      const currentOversFloat = parseFloat(state.battingTeam.overs || "0");
+      let overNum = Math.floor(currentOversFloat);
+      let ballNum = Math.round((currentOversFloat % 1) * 10) + 1;
+      if (ballNum >= 6) {
+        overNum += 1;
+        ballNum = 0;
+      }
+      state.battingTeam.overs = `${overNum}.${ballNum}`;
+
       // Update striker
       state.batsmen[0].runs += runs;
       state.batsmen[0].balls += 1;
@@ -178,6 +199,12 @@
       } else if (runs === 6) {
         iframe.contentWindow.postMessage({ type: 'TRIGGER_SIX', batsman: state.batsmen[0].name }, '*');
       }
+    }
+
+    function startNewOver() {
+      const state = iframe.contentWindow.cricketOverlay.getState();
+      state.thisOver = [];
+      iframe.contentWindow.postMessage({ type: 'UPDATE_OVERLAY_STATE', state: state }, '*');
     }
 
     function triggerFourEvent() {
@@ -220,7 +247,12 @@
     }
 
     function triggerOverEnd() {
+      const state = iframe.contentWindow.cricketOverlay.getState();
       iframe.contentWindow.postMessage({ type: 'TRIGGER_OVER_SUMMARY' }, '*');
+      setTimeout(() => {
+        state.thisOver = [];
+        iframe.contentWindow.postMessage({ type: 'UPDATE_OVERLAY_STATE', state: state }, '*');
+      }, 3500);
     }
 
     function triggerScorecard() {

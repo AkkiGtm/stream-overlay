@@ -80,7 +80,7 @@
       wickets: 1,
       economy: "7.76"
     },
-    thisOver: ["1", "4", "0", "6", "2"],
+    thisOver: [],
     // Extended scorecard for 2nd-over popup
     teamScorecard: [
       { name: "Ishan K. (wk)", dismissal: "c Pant b Nortje", runs: 12, balls: 9, fours: 2, sixes: 0 },
@@ -284,18 +284,29 @@
       els.bowlerStats.innerText = `${state.bowler.wickets}-${state.bowler.runs} (${state.bowler.overs})`;
     }
 
-    // This Over Balls
+    // This Over Balls (Renders bowled balls or 6 faint empty slots if new over)
     if (els.thisOverPills && Array.isArray(state.thisOver)) {
-      els.thisOverPills.innerHTML = state.thisOver.map(ball => {
-        let pillClass = "ball-pill";
-        const b = String(ball).toUpperCase();
-        if (b === "0" || b === "•") pillClass += " dot";
-        else if (b === "4") pillClass += " four";
-        else if (b === "6") pillClass += " six";
-        else if (b.includes("W") && !b.includes("WD")) pillClass += " wicket";
-        else if (b.includes("WD") || b.includes("NB")) pillClass += " extra";
-        return `<div class="${pillClass}">${b}</div>`;
-      }).join('');
+      if (state.thisOver.length === 0) {
+        els.thisOverPills.innerHTML = `
+          <div class="ball-pill empty">•</div>
+          <div class="ball-pill empty">•</div>
+          <div class="ball-pill empty">•</div>
+          <div class="ball-pill empty">•</div>
+          <div class="ball-pill empty">•</div>
+          <div class="ball-pill empty">•</div>
+        `;
+      } else {
+        els.thisOverPills.innerHTML = state.thisOver.map(ball => {
+          let pillClass = "ball-pill";
+          const b = String(ball).toUpperCase();
+          if (b === "0" || b === "•") pillClass += " dot";
+          else if (b === "4") pillClass += " four";
+          else if (b === "6") pillClass += " six";
+          else if (b.includes("W") && !b.includes("WD")) pillClass += " wicket";
+          else if (b.includes("WD") || b.includes("NB")) pillClass += " extra";
+          return `<div class="${pillClass}">${b}</div>`;
+        }).join('');
+      }
     }
 
     // Check for Trigger Events: Wickets, Over Change, 2nd Over Scorecard
@@ -341,12 +352,16 @@
         previousState.thisOverLen = curLen;
         previousState.lastBall = latestBall;
       }
-    } else if (previousState.totalRuns > 0) {
-      const runDelta = currentRuns - previousState.totalRuns;
-      if (runDelta === 4) {
-        triggerBoundaryEvent('four', striker);
-      } else if (runDelta === 6) {
-        triggerBoundaryEvent('six', striker);
+    } else {
+      previousState.thisOverLen = 0;
+      previousState.lastBall = '';
+      if (previousState.totalRuns > 0) {
+        const runDelta = currentRuns - previousState.totalRuns;
+        if (runDelta === 4) {
+          triggerBoundaryEvent('four', striker);
+        } else if (runDelta === 6) {
+          triggerBoundaryEvent('six', striker);
+        }
       }
     }
 
@@ -436,6 +451,24 @@
     setTimeout(() => {
       els.overSummaryCard.classList.remove('active');
     }, 6000); // Display for 6 seconds
+
+    // Automatically clear "This Over" pills 3.5s after over ends, preparing for the new over
+    setTimeout(() => {
+      const curOv = parseFloat((state && state.battingTeam && state.battingTeam.overs) || currentState.battingTeam.overs || "0");
+      if (curOv % 1 === 0) {
+        currentState.thisOver = [];
+        if (els.thisOverPills) {
+          els.thisOverPills.innerHTML = `
+            <div class="ball-pill empty">•</div>
+            <div class="ball-pill empty">•</div>
+            <div class="ball-pill empty">•</div>
+            <div class="ball-pill empty">•</div>
+            <div class="ball-pill empty">•</div>
+            <div class="ball-pill empty">•</div>
+          `;
+        }
+      }
+    }, 3500);
   }
 
   // Trigger: Team Scorecard Modal
@@ -651,6 +684,44 @@
     }
 
     initWS();
+  }
+
+  // Helper: Extract current over balls or clean for upcoming new over
+  function extractThisOverBalls(d, currentOversFloat) {
+    const isWholeOver = (currentOversFloat % 1 === 0);
+    const completedOvers = Math.floor(currentOversFloat);
+    const bowlerOvers = (d.bowlers && d.bowlers.sb && d.bowlers.sb.overs !== undefined) ? String(d.bowlers.sb.overs) : (currentState.bowler?.overs || '');
+
+    // Check if over already completed and notified, or initial load at X.0, or new bowler with 0.0 overs
+    const overAlreadyCompleted = isWholeOver && (
+      isInitialLiveLoad ||
+      (previousState.lastOverNotified === completedOvers && completedOvers > 0) ||
+      (bowlerOvers === '0.0' && completedOvers > 0)
+    );
+
+    if (typeof d.recent_over === 'string') {
+      const rawOver = d.recent_over.trim();
+      if (!rawOver || rawOver.endsWith('|')) {
+        // CricHeroes indicates new over via trailing pipe (e.g. "0 1 4 0 0 1 | ")
+        return [];
+      }
+      const parts = rawOver.split('|');
+      const lastChunk = parts[parts.length - 1].trim();
+      if (!lastChunk) return [];
+
+      const balls = lastChunk.split(/\s+/).filter(Boolean);
+      if (overAlreadyCompleted) {
+        return [];
+      }
+      return balls;
+    } else if (Array.isArray(d.this_over)) {
+      if (overAlreadyCompleted) return [];
+      return d.this_over;
+    } else if (Array.isArray(d.recent_balls)) {
+      if (overAlreadyCompleted) return [];
+      return d.recent_balls;
+    }
+    return [];
   }
 
   // Data adapter for CricHeroes API & MQTT real-time payloads
@@ -956,18 +1027,9 @@
         }
       }
 
-      // 6. This Over Balls
-      if (typeof d.recent_over === 'string' && d.recent_over.trim()) {
-        const parts = d.recent_over.trim().split('|');
-        const lastOver = parts[parts.length - 1].trim();
-        if (lastOver) {
-          currentState.thisOver = lastOver.split(/\s+/);
-        }
-      } else if (Array.isArray(d.this_over)) {
-        currentState.thisOver = d.this_over;
-      } else if (Array.isArray(d.recent_balls)) {
-        currentState.thisOver = d.recent_balls;
-      }
+      // 6. This Over Balls (Current Active Over)
+      const currentOversFloat = parseFloat(currentState.battingTeam.overs || "0");
+      currentState.thisOver = extractThisOverBalls(d, currentOversFloat);
 
       return;
     }
@@ -1008,9 +1070,8 @@
         economy: d.bowler.economy || "0.00"
       };
     }
-    if (Array.isArray(d.this_over)) {
-      currentState.thisOver = d.this_over;
-    }
+    const fallbackOversFloat = parseFloat(currentState.battingTeam.overs || "0");
+    currentState.thisOver = extractThisOverBalls(d, fallbackOversFloat);
   }
 
   // Export functions to window for direct console testing
