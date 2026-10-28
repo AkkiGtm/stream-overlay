@@ -643,13 +643,21 @@
             const firstBrace = text.indexOf('{');
             const lastBrace = text.lastIndexOf('}');
             if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+              const headerPart = text.substring(0, firstBrace);
               const jsonStr = text.substring(firstBrace, lastBrace + 1);
               try {
                 const parsed = JSON.parse(jsonStr);
                 if (parsed && (parsed.status || parsed.data)) {
-                  console.log('%c[Live Ball Update Received]%c', 'color:cyan;font-weight:bold', '', parsed);
-                  adaptCricHeroesData(parsed);
-                  renderOverlay(currentState);
+                  const isScorecardOnly = headerPart.includes('scorecard') && !headerPart.includes('webminiscorecard');
+                  if (isScorecardOnly) {
+                    // Full scorecard packet: silently update extended batting card for popup modal
+                    adaptScorecardData(parsed);
+                  } else {
+                    // Live webminiscorecard packet: update real-time live ticker
+                    console.log('%c[Live Ball Update Received]%c', 'color:cyan;font-weight:bold', '', parsed);
+                    adaptCricHeroesData(parsed);
+                    renderOverlay(currentState);
+                  }
                 }
               } catch (e) {
                 // Ignore partial frames
@@ -688,6 +696,11 @@
 
   // Helper: Extract current over balls or clean for upcoming new over
   function extractThisOverBalls(d, currentOversFloat) {
+    // CRITICAL: If the update packet does not contain ball-by-ball fields (e.g. scorecard/commentary), preserve current balls!
+    if (d.recent_over === undefined && d.this_over === undefined && d.recent_balls === undefined) {
+      return currentState.thisOver;
+    }
+
     const isWholeOver = (currentOversFloat % 1 === 0);
     const completedOvers = Math.floor(currentOversFloat);
     const bowlerOvers = (d.bowlers && d.bowlers.sb && d.bowlers.sb.overs !== undefined) ? String(d.bowlers.sb.overs) : (currentState.bowler?.overs || '');
@@ -721,7 +734,34 @@
       if (overAlreadyCompleted) return [];
       return d.recent_balls;
     }
-    return [];
+    return currentState.thisOver;
+  }
+
+  // Silent adapter for full scorecard packet (updates extended batting modal table without touching live ticker)
+  function adaptScorecardData(chData) {
+    if (!chData) return;
+    const d = chData.data ? chData.data : chData;
+    if (!d) return;
+
+    const currentInning = parseInt(d.current_inning || d.match_inning || 1, 10);
+    const batTeam = currentInning === 2 ? (d.team_b || d.team_a) : (d.team_a || d.team_b);
+
+    if (batTeam && Array.isArray(batTeam.scorecard)) {
+      for (const sc of batTeam.scorecard) {
+        if (Array.isArray(sc.batting) && sc.batting.length > 0) {
+          currentState.teamScorecard = sc.batting.map(b => ({
+            name: b.name,
+            dismissal: b.how_to_out_short_name || b.how_to_out || "not out",
+            runs: parseInt(b.runs || 0, 10),
+            balls: parseInt(b.balls || 0, 10),
+            fours: parseInt(b['4s'] || 0, 10),
+            sixes: parseInt(b['6s'] || 0, 10),
+            active: !b.how_to_out || b.how_to_out === "not out"
+          }));
+          break;
+        }
+      }
+    }
   }
 
   // Data adapter for CricHeroes API & MQTT real-time payloads
@@ -937,37 +977,39 @@
       }
 
       // Strategy B: Extract from batTeam.scorecard batting list (scorecard packet)
-      if (!batsmenFound && batTeam && Array.isArray(batTeam.scorecard)) {
+      if (batTeam && Array.isArray(batTeam.scorecard)) {
         for (const sc of batTeam.scorecard) {
           if (Array.isArray(sc.batting) && sc.batting.length > 0) {
-            // Find currently active "not out" batsmen
-            const notOutBatsmen = sc.batting.filter(b => {
-              const hto = (b.how_to_out || b.how_to_out_short_name || '').toLowerCase().trim();
-              return hto === '' || hto === 'not out' || hto === 'batting';
-            });
+            // Only fallback live batsmen if we have NO active live batsmen yet
+            if (!batsmenFound && (!currentState.batsmen || currentState.batsmen.length < 2 || currentState.batsmen[0].name === "Striker")) {
+              const notOutBatsmen = sc.batting.filter(b => {
+                const hto = (b.how_to_out || b.how_to_out_short_name || '').toLowerCase().trim();
+                return hto === '' || hto === 'not out' || hto === 'batting';
+              });
 
-            if (notOutBatsmen.length >= 1) {
-              currentState.batsmen[0] = {
-                name: notOutBatsmen[0].name || "Striker",
-                runs: parseInt(notOutBatsmen[0].runs || 0, 10),
-                balls: parseInt(notOutBatsmen[0].balls || 0, 10),
-                fours: parseInt(notOutBatsmen[0]['4s'] || 0, 10),
-                sixes: parseInt(notOutBatsmen[0]['6s'] || 0, 10),
-                isStriker: true
-              };
-            }
-            if (notOutBatsmen.length >= 2) {
-              currentState.batsmen[1] = {
-                name: notOutBatsmen[1].name || "Non-Striker",
-                runs: parseInt(notOutBatsmen[1].runs || 0, 10),
-                balls: parseInt(notOutBatsmen[1].balls || 0, 10),
-                fours: parseInt(notOutBatsmen[1]['4s'] || 0, 10),
-                sixes: parseInt(notOutBatsmen[1]['6s'] || 0, 10),
-                isStriker: false
-              };
+              if (notOutBatsmen.length >= 1) {
+                currentState.batsmen[0] = {
+                  name: notOutBatsmen[0].name || "Striker",
+                  runs: parseInt(notOutBatsmen[0].runs || 0, 10),
+                  balls: parseInt(notOutBatsmen[0].balls || 0, 10),
+                  fours: parseInt(notOutBatsmen[0]['4s'] || 0, 10),
+                  sixes: parseInt(notOutBatsmen[0]['6s'] || 0, 10),
+                  isStriker: true
+                };
+              }
+              if (notOutBatsmen.length >= 2) {
+                currentState.batsmen[1] = {
+                  name: notOutBatsmen[1].name || "Non-Striker",
+                  runs: parseInt(notOutBatsmen[1].runs || 0, 10),
+                  balls: parseInt(notOutBatsmen[1].balls || 0, 10),
+                  fours: parseInt(notOutBatsmen[1]['4s'] || 0, 10),
+                  sixes: parseInt(notOutBatsmen[1]['6s'] || 0, 10),
+                  isStriker: false
+                };
+              }
             }
 
-            // Also populate extended scorecard
+            // Always populate extended scorecard for modal
             currentState.teamScorecard = sc.batting.map(b => ({
               name: b.name,
               dismissal: b.how_to_out_short_name || b.how_to_out || "not out",
@@ -999,8 +1041,8 @@
         }
       }
 
-      if (!bowlerFound) {
-        // Search across both teams' scorecard arrays
+      // Fallback: ONLY search scorecard array if we have NO active bowler yet
+      if (!bowlerFound && (!currentState.bowler || !currentState.bowler.name || currentState.bowler.name === "Bowler")) {
         let allBowlers = [];
         [batTeam, bowlTeam].forEach(team => {
           if (team && Array.isArray(team.scorecard)) {
