@@ -34,6 +34,7 @@
   }
 
   // --- 2. State Tracking ---
+  let isInitialLiveLoad = true;
   let previousState = {
     overs: 0,
     wickets: 0,
@@ -307,10 +308,23 @@
     const completedOvers = Math.floor(currentOversFloat);
     const isOverComplete = (currentOversFloat % 1 === 0 && completedOvers > 0);
     const currentRuns = state.battingTeam.score || 0;
+    const currentWickets = state.battingTeam.wickets || 0;
     const striker = (state.batsmen && state.batsmen[0]) ? state.batsmen[0].name : '';
 
-    // Event A: WICKET DETECTED!
-    if (state.battingTeam.wickets > previousState.wickets && previousState.wickets !== 0) {
+    // First Live Snapshot Load: Set baseline values without firing historic alerts
+    if (isInitialLiveLoad) {
+      previousState.wickets = currentWickets;
+      previousState.totalRuns = currentRuns;
+      previousState.overs = currentOversFloat;
+      previousState.thisOverLen = Array.isArray(state.thisOver) ? state.thisOver.length : 0;
+      previousState.lastBall = (Array.isArray(state.thisOver) && state.thisOver.length > 0) ? String(state.thisOver[state.thisOver.length - 1]).toUpperCase() : '';
+      previousState.lastOverNotified = completedOvers;
+      isInitialLiveLoad = false;
+      return;
+    }
+
+    // Event A: WICKET DETECTED (fires on ANY wicket, including 1st wicket 0 -> 1)!
+    if (currentWickets > previousState.wickets) {
       triggerWicketEvent(state);
     }
 
@@ -321,7 +335,7 @@
       if (curLen !== previousState.thisOverLen || latestBall !== previousState.lastBall) {
         if (latestBall === '4' || latestBall === '4B' || latestBall === '4LB') {
           triggerBoundaryEvent('four', striker);
-        } else if (latestBall === '6') {
+        } else if (latestBall === '6' || latestBall === '6NB') {
           triggerBoundaryEvent('six', striker);
         }
         previousState.thisOverLen = curLen;
@@ -352,7 +366,7 @@
     }
 
     // Update previous tracker
-    previousState.wickets = state.battingTeam.wickets;
+    previousState.wickets = currentWickets;
     previousState.totalRuns = currentRuns;
     previousState.overs = currentOversFloat;
   }
