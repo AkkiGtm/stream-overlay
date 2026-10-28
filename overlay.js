@@ -12,6 +12,7 @@
   const matchId = urlParams.get('matchId') || '';
   const matchUrl = urlParams.get('matchUrl') || '';
   const proxyUrl = urlParams.get('proxyUrl') || '';
+  const customTournament = urlParams.get('tournament') || '';
   const pollInterval = parseInt(urlParams.get('pollInterval') || '3000', 10);
 
   // Apply theme to body
@@ -51,7 +52,7 @@
     venue: "",
     startTime: "",
     toss: "",
-    tournament: "T20 PREMIER CHAMPIONSHIP 2026",
+    tournament: customTournament ? customTournament.toUpperCase() : "LIVE CRICKET",
     matchStatus: "1ST INNINGS • TARGET: 184",
     crr: "8.65",
     rrr: "9.20",
@@ -653,7 +654,16 @@
       currentState.isUpcoming = true;
 
       // Tournament
-      currentState.tournament = (d.tournament_name || d.tournament?.name || d.matchDetails?.tournament?.name || "MATCH PREVIEW").toUpperCase();
+      if (customTournament) {
+        currentState.tournament = customTournament.toUpperCase();
+      } else if (d.tournament_name && d.tournament_name.trim()) {
+        const round = (d.tournament_round_name && d.tournament_round_name.trim()) ? ` • ${d.tournament_round_name.trim()}` : '';
+        currentState.tournament = `${d.tournament_name.trim()}${round}`.toUpperCase();
+      } else {
+        const oversPart = d.overs ? `${d.overs} OVERS` : (d.match_type || 'LIMITED OVERS');
+        const ballPart = d.ball_type ? ` • ${d.ball_type}` : '';
+        currentState.tournament = `MATCH PREVIEW • ${oversPart}${ballPart}`.toUpperCase();
+      }
 
       // Teams (supports string names, objects, or team_a_name keys)
       const tA = d.team_a || d.teams?.teamA || d.teams?.team_a || d.matchDetails?.teams?.teamA || {};
@@ -712,9 +722,18 @@
 
     currentState.isUpcoming = false;
 
-    // 2. Tournament Name
-    if (d.tournament_name) {
-      currentState.tournament = d.tournament_name.toUpperCase();
+    // 2. Resolve Tournament / Match Title
+    if (customTournament) {
+      currentState.tournament = customTournament.toUpperCase();
+    } else if (d.tournament_name && d.tournament_name.trim()) {
+      const round = (d.tournament_round_name && d.tournament_round_name.trim()) ? ` • ${d.tournament_round_name.trim()}` : '';
+      currentState.tournament = `${d.tournament_name.trim()}${round}`.toUpperCase();
+    } else {
+      // Individual match / bilateral friendly (no tournament registered on CricHeroes)
+      const oversPart = d.overs ? `${d.overs} OVERS` : (d.match_type || 'LIMITED OVERS');
+      const ballPart = d.ball_type ? ` • ${d.ball_type}` : '';
+      const groundPart = d.ground_name ? ` • ${d.ground_name.split(',')[0].trim()}` : '';
+      currentState.tournament = `${oversPart}${ballPart}${groundPart}`.toUpperCase();
     }
 
     // 2. Determine Inning & Match Status

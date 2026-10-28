@@ -123,16 +123,19 @@
       <div class="panel">
         <div class="panel-title">4. CricHeroes Connection</div>
         <label style="font-size:11px; color:#94a3b8;">Match ID (Only numeric ID needed):</label>
-        <input type="text" id="ch-match-id" placeholder="e.g. 27909503 or 27924686">
+        <input type="text" id="ch-match-id" placeholder="e.g. 27837535 or 27909503">
+        <label style="font-size:11px; color:#94a3b8;">Tournament Name (Optional override):</label>
+        <input type="text" id="ch-tournament-name" placeholder="Leave blank to use CricHeroes name">
         <label style="font-size:11px; color:#94a3b8;">Proxy URL (leave blank for local):</label>
         <input type="text" id="ch-proxy-url" placeholder="Default: /proxy">
         <button class="btn-amber" style="width:100%; margin-bottom:8px;" onclick="connectCricHeroes()">Connect Match</button>
         
         <div style="font-size:11px; color:#94a3b8; margin: 8px 0 4px 0;">Quick Test Matches:</div>
         <div style="display:flex; gap:6px;">
-          <button style="flex:1; font-size:11px; padding:6px 4px;" onclick="loadPresetMatch('27909503')">Upcoming</button>
-          <button style="flex:1; font-size:11px; padding:6px 4px;" onclick="loadPresetMatch('27924686')">Live Inning 2</button>
-          <button style="flex:1; font-size:11px; padding:6px 4px;" onclick="loadPresetMatch('demo')">Local Demo</button>
+          <button style="flex:1; font-size:11px; padding:6px 2px;" onclick="loadPresetMatch('27837535')">27837535</button>
+          <button style="flex:1; font-size:11px; padding:6px 2px;" onclick="loadPresetMatch('27909503')">Upcoming</button>
+          <button style="flex:1; font-size:11px; padding:6px 2px;" onclick="loadPresetMatch('27924686')">Live Inn 2</button>
+          <button style="flex:1; font-size:11px; padding:6px 2px;" onclick="loadPresetMatch('demo')">Demo</button>
         </div>
       </div>
     </div>
@@ -238,8 +241,10 @@
       const idMatch = inputVal.match(/\d{7,10}/);
       const cleanId = idMatch ? idMatch[0] : inputVal;
       const urlQuery = inputVal.startsWith('http') ? `&matchUrl=${encodeURIComponent(inputVal)}` : '';
+      const tournVal = document.getElementById('ch-tournament-name').value.trim();
+      const tournQuery = tournVal ? `&tournament=${encodeURIComponent(tournVal)}` : '';
 
-      iframe.src = `index.html?mode=live&matchId=${encodeURIComponent(cleanId)}${urlQuery}&proxyUrl=${encodeURIComponent(pUrl)}&t=${Date.now()}`;
+      iframe.src = `index.html?mode=live&matchId=${encodeURIComponent(cleanId)}${urlQuery}${tournQuery}&proxyUrl=${encodeURIComponent(pUrl)}&t=${Date.now()}`;
       document.getElementById('status-tag').innerText = `STATUS: CONNECTED TO MATCH ${cleanId}`;
       document.getElementById('status-tag').style.background = '#10b981';
     }
