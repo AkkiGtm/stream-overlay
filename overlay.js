@@ -81,15 +81,23 @@
       economy: "7.76"
     },
     thisOver: [],
-    // Extended scorecard for 2nd-over popup
+    isInningsBreak: false,
+    target: 169,
+    // Extended scorecard for 2nd-over popup and innings break
     teamScorecard: [
-      { name: "Ishan K. (wk)", dismissal: "c Pant b Nortje", runs: 12, balls: 9, fours: 2, sixes: 0 },
-      { name: "Rohit S. (c)", dismissal: "not out", runs: 48, balls: 32, fours: 5, sixes: 2, active: true },
-      { name: "Tilak V.", dismissal: "b Kuldeep", runs: 3, balls: 5, fours: 0, sixes: 0 },
-      { name: "Surya K.", dismissal: "not out", runs: 24, balls: 14, fours: 3, sixes: 1, active: true }
+      { name: "Ishan K. (wk)", dismissal: "c Pant b Nortje", runs: 12, balls: 9, fours: 2, sixes: 0, sr: "133.3" },
+      { name: "Rohit S. (c)", dismissal: "not out", runs: 48, balls: 32, fours: 5, sixes: 2, sr: "150.0", active: true },
+      { name: "Tilak V.", dismissal: "b Kuldeep", runs: 3, balls: 5, fours: 0, sixes: 0, sr: "60.0" },
+      { name: "Surya K.", dismissal: "not out", runs: 24, balls: 14, fours: 3, sixes: 1, sr: "171.4", active: true }
+    ],
+    bowlingScorecard: [
+      { name: "A. Nortje", overs: "4.0", maidens: 0, runs: 28, wickets: 2, economy: "7.00" },
+      { name: "Kuldeep Y.", overs: "4.0", maidens: 0, runs: 32, wickets: 2, economy: "8.00" },
+      { name: "Khaleel A.", overs: "4.0", maidens: 0, runs: 45, wickets: 1, economy: "11.25" },
+      { name: "Axar P.", overs: "4.0", maidens: 0, runs: 38, wickets: 1, economy: "9.50" }
     ],
     partnerships: "52 (31 balls)",
-    extras: "Lbw: 0, Wd: 4, Nb: 1"
+    extras: "Extras: 14 (Wd: 8, Nb: 1, B: 3, Lb: 2)"
   };
 
   // --- 3. DOM Element References ---
@@ -106,6 +114,19 @@
     bowlerName: document.getElementById('bowler-name'),
     bowlerStats: document.getElementById('bowler-stats'),
     thisOverPills: document.getElementById('this-over-pills'),
+    // Innings Break Full Scorecard Card
+    inningsBreakCard: document.getElementById('innings-break-card'),
+    ibTournament: document.getElementById('ib-tournament'),
+    ibTargetPill: document.getElementById('ib-target-pill'),
+    ibTeamName: document.getElementById('ib-team-name'),
+    ibRunsScore: document.getElementById('ib-runs-score'),
+    ibWicketsScore: document.getElementById('ib-wickets-score'),
+    ibOversScore: document.getElementById('ib-overs-score'),
+    ibChaseTarget: document.getElementById('ib-chase-target'),
+    ibBattingTbody: document.getElementById('ib-batting-tbody'),
+    ibBowlingTbody: document.getElementById('ib-bowling-tbody'),
+    ibExtras: document.getElementById('ib-extras'),
+    ibStatusTag: document.getElementById('ib-status-tag'),
     // Upcoming Match Center Card
     upcomingCard: document.getElementById('upcoming-card'),
     upcomingTournament: document.getElementById('upcoming-tournament'),
@@ -240,7 +261,18 @@
       return;
     }
 
-    // --- Live Match Active: Dismiss Center Card & Display Broadcast Ticker ---
+    // Handle Innings Break Center Broadcast Full Scorecard View
+    if (state.isInningsBreak) {
+      console.log('%c[Innings Break Card Active]%c', 'color:gold;font-weight:bold', '', `${state.battingTeam?.name} Scorecard`);
+      if (els.scoreboardContainer) els.scoreboardContainer.classList.add('hidden');
+      if (els.upcomingCard) els.upcomingCard.classList.remove('active');
+      if (els.inningsBreakCard) els.inningsBreakCard.classList.add('active');
+      renderInningsBreakCard(state);
+      return;
+    }
+
+    // --- Live Match Active: Dismiss Center Cards & Display Broadcast Ticker ---
+    if (els.inningsBreakCard) els.inningsBreakCard.classList.remove('active');
     if (els.upcomingCard) els.upcomingCard.classList.remove('active');
     if (els.scoreboardContainer) els.scoreboardContainer.classList.remove('hidden');
 
@@ -311,6 +343,94 @@
 
     // Check for Trigger Events: Wickets, Over Change, 2nd Over Scorecard
     evaluateTriggers(state);
+  }
+
+  // Render Innings Break Broadcast Full Scorecard Card
+  function renderInningsBreakCard(state) {
+    if (!els.inningsBreakCard) return;
+
+    if (els.ibTournament) {
+      els.ibTournament.innerText = state.tournament || "T20 PREMIER CHAMPIONSHIP 2026";
+    }
+
+    const tgt = state.target || (state.battingTeam && state.battingTeam.score > 0 ? state.battingTeam.score + 1 : 0);
+    if (els.ibTargetPill) {
+      els.ibTargetPill.innerText = tgt > 0 ? `TARGET: ${tgt} RUNS` : "INNINGS COMPLETED";
+    }
+
+    if (els.ibTeamName) {
+      els.ibTeamName.innerText = state.battingTeam?.name || "1ST INNINGS BATTING";
+    }
+
+    if (els.ibRunsScore) {
+      els.ibRunsScore.innerText = state.battingTeam?.score !== undefined ? state.battingTeam.score : "0";
+    }
+    if (els.ibWicketsScore) {
+      els.ibWicketsScore.innerText = state.battingTeam?.wickets !== undefined ? state.battingTeam.wickets : "0";
+    }
+    if (els.ibOversScore) {
+      els.ibOversScore.innerText = `(${state.battingTeam?.overs || "0.0"} OVERS)`;
+    }
+
+    if (els.ibChaseTarget) {
+      const bowlName = state.bowlingTeam?.name || "OPPONENTS";
+      const totalBalls = parseInt(state.overs || 20, 10) * 6;
+      const rrr = tgt > 0 && totalBalls > 0 ? ((tgt / totalBalls) * 6).toFixed(2) : "0.00";
+      els.ibChaseTarget.innerText = tgt > 0
+        ? `${bowlName} NEED ${tgt} RUNS TO WIN • REQ. RR: ${rrr}`
+        : `${bowlName} YET TO BAT`;
+    }
+
+    // Populate Batting Table (left column)
+    if (els.ibBattingTbody) {
+      const bats = Array.isArray(state.teamScorecard) && state.teamScorecard.length > 0
+        ? state.teamScorecard
+        : (state.batsmen || []);
+
+      els.ibBattingTbody.innerHTML = bats.map(b => {
+        const runs = b.runs !== undefined ? b.runs : 0;
+        const balls = b.balls !== undefined ? b.balls : 0;
+        const fours = b.fours !== undefined ? b.fours : 0;
+        const sixes = b.sixes !== undefined ? b.sixes : 0;
+        const sr = b.sr || (balls > 0 ? ((runs / balls) * 100).toFixed(1) : "0.0");
+        return `
+          <tr class="${b.active ? 'active-batsman' : ''}">
+            <td><strong>${b.name}</strong><br><small style="color:#94a3b8">${b.dismissal || (b.isStriker ? 'not out' : '')}</small></td>
+            <td class="stat-num">${runs}</td>
+            <td class="stat-num">${balls}</td>
+            <td class="stat-num">${fours}</td>
+            <td class="stat-num">${sixes}</td>
+            <td class="stat-num">${sr}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Populate Bowling Table (right column)
+    if (els.ibBowlingTbody) {
+      const bowls = Array.isArray(state.bowlingScorecard) && state.bowlingScorecard.length > 0
+        ? state.bowlingScorecard
+        : (state.bowler ? [state.bowler] : []);
+
+      els.ibBowlingTbody.innerHTML = bowls.map(b => `
+        <tr>
+          <td><strong>${b.name}</strong></td>
+          <td class="stat-num">${b.overs || "0.0"}</td>
+          <td class="stat-num">${b.maidens !== undefined ? b.maidens : 0}</td>
+          <td class="stat-num">${b.runs !== undefined ? b.runs : 0}</td>
+          <td class="stat-num" style="color:var(--accent-gold); font-weight:800;">${b.wickets !== undefined ? b.wickets : 0}</td>
+          <td class="stat-num">${b.economy || "0.00"}</td>
+        </tr>
+      `).join('');
+    }
+
+    if (els.ibExtras) {
+      els.ibExtras.innerText = state.extras || "Extras: Inning Completed";
+    }
+
+    if (els.ibStatusTag) {
+      els.ibStatusTag.innerText = "2ND INNINGS STARTING SOON";
+    }
   }
 
   // --- 5. Trigger Engine (Over Summary, 2nd Over Scorecard, Wickets, Boundaries & Replay) ---
@@ -574,6 +694,9 @@
         triggerBoundaryEvent('six', event.data.batsman || striker);
       } else if (event.data && event.data.type === 'TRIGGER_SCORECARD') {
         triggerTeamScorecard(currentState);
+      } else if (event.data && event.data.type === 'TRIGGER_INNINGS_BREAK') {
+        currentState.isInningsBreak = !currentState.isInningsBreak;
+        renderOverlay(currentState);
       } else if (event.data && event.data.type === 'TRIGGER_OVER_SUMMARY') {
         triggerOverSummary(Math.floor(parseFloat(currentState.battingTeam.overs)), currentState);
       } else if (event.data && event.data.type === 'SET_THEME') {
@@ -737,7 +860,34 @@
     return currentState.thisOver;
   }
 
-  // Silent adapter for full scorecard packet (updates extended batting modal table without touching live ticker)
+  let scorecardFetched = false;
+  function fetchFullScorecardOnce(mId) {
+    if (scorecardFetched || !mId) return;
+    scorecardFetched = true;
+    const pUrl = (proxyUrl || '/proxy').replace(/\/+$/, '');
+    const scEndpoint = `${pUrl}/sc/${mId}`;
+    fetch(scEndpoint)
+      .then(r => r.json())
+      .then(scData => {
+        if (scData && (scData.status || scData.data)) {
+          adaptScorecardData(scData);
+          if (currentState.isInningsBreak) renderOverlay(currentState);
+        }
+      })
+      .catch(() => {
+        fetch(`${pUrl}?matchId=${mId}&full=true`)
+          .then(r => r.json())
+          .then(scData => {
+            if (scData && (scData.status || scData.data)) {
+              adaptScorecardData(scData);
+              if (currentState.isInningsBreak) renderOverlay(currentState);
+            }
+          })
+          .catch(() => {});
+      });
+  }
+
+  // Silent adapter for full scorecard packet (updates extended batting & bowling card for modal and innings break)
   function adaptScorecardData(chData) {
     if (!chData) return;
     const d = chData.data ? chData.data : chData;
@@ -745,22 +895,67 @@
 
     const currentInning = parseInt(d.current_inning || d.match_inning || 1, 10);
     const batTeam = currentInning === 2 ? (d.team_b || d.team_a) : (d.team_a || d.team_b);
+    const bowlTeam = currentInning === 2 ? (d.team_a || d.team_b) : (d.team_b || d.team_a);
 
+    // Extract batting table
     if (batTeam && Array.isArray(batTeam.scorecard)) {
       for (const sc of batTeam.scorecard) {
         if (Array.isArray(sc.batting) && sc.batting.length > 0) {
           currentState.teamScorecard = sc.batting.map(b => ({
-            name: b.name,
-            dismissal: b.how_to_out_short_name || b.how_to_out || "not out",
-            runs: parseInt(b.runs || 0, 10),
-            balls: parseInt(b.balls || 0, 10),
-            fours: parseInt(b['4s'] || 0, 10),
-            sixes: parseInt(b['6s'] || 0, 10),
+            name: b.name || b.player_name || "Batsman",
+            dismissal: b.how_to_out_short_name || b.how_to_out || b.dismissal || "not out",
+            runs: parseInt(b.runs || b.run || 0, 10),
+            balls: parseInt(b.balls || b.ball || 0, 10),
+            fours: parseInt(b['4s'] || b.fours || 0, 10),
+            sixes: parseInt(b['6s'] || b.sixes || 0, 10),
+            sr: b.strike_rate ? String(b.strike_rate) : (b.balls > 0 ? ((b.runs / b.balls) * 100).toFixed(1) : "0.0"),
             active: !b.how_to_out || b.how_to_out === "not out"
           }));
           break;
         }
       }
+    }
+
+    // Extract bowling table
+    let allBowlers = [];
+    [bowlTeam, batTeam].forEach(team => {
+      if (team && Array.isArray(team.scorecard)) {
+        team.scorecard.forEach(sc => {
+          if (Array.isArray(sc.bowling)) allBowlers = allBowlers.concat(sc.bowling);
+        });
+      }
+    });
+    if (Array.isArray(d.bowlers)) allBowlers = allBowlers.concat(d.bowlers);
+
+    if (allBowlers.length > 0) {
+      const seen = new Set();
+      currentState.bowlingScorecard = [];
+      allBowlers.forEach(b => {
+        if (b && (b.name || b.player_name)) {
+          const bName = b.name || b.player_name;
+          if (!seen.has(bName)) {
+            seen.add(bName);
+            const overs = String(b.overs || b.overs_bowled || "0.0");
+            const runs = parseInt(b.runs || b.runs_conceded || 0, 10);
+            let eco = String(b.economy_rate || b.economy || "0.00");
+            if (eco === "0.00" && parseFloat(overs) > 0) {
+              eco = (runs / parseFloat(overs)).toFixed(2);
+            }
+            currentState.bowlingScorecard.push({
+              name: bName,
+              overs: overs,
+              maidens: parseInt(b.maidens || b.maiden_overs || 0, 10),
+              runs: runs,
+              wickets: parseInt(b.wickets || b.wickets_taken || 0, 10),
+              economy: eco
+            });
+          }
+        }
+      });
+    }
+
+    if (currentState.isInningsBreak) {
+      renderOverlay(currentState);
     }
   }
 
@@ -864,9 +1059,42 @@
     // 2. Determine Inning & Match Status
     const currentInning = parseInt(d.current_inning || d.match_inning || 1, 10);
     const isFinished = d.status === 'past' || Boolean(d.winning_team) || Boolean(d.match_result);
+
+    // 2.5. Innings Break Detection (matches match_event: "innings break", match_event_type: "INNING-BREAK")
+    const eventType = String(d.match_event_type || d.matchDetails?.match_event_type || '').toUpperCase();
+    const eventName = String(d.match_event || d.matchDetails?.match_event || '').toLowerCase();
+    const statusStr = String(d.status || d.matchStatus || '').toLowerCase();
+    const summaryStr = String(d.match_summary?.summary || '').toLowerCase();
+
+    const isInningsBreak = !isFinished && (
+      eventType === 'INNING-BREAK' ||
+      eventType === 'INNINGS-BREAK' ||
+      eventType === 'INNINGS_BREAK' ||
+      eventName === 'innings break' ||
+      eventName.includes('innings break') ||
+      statusStr === 'innings_break' ||
+      statusStr === 'innings break' ||
+      summaryStr.includes('innings break') ||
+      Boolean(d.is_innings_break)
+    );
+
+    currentState.isInningsBreak = isInningsBreak;
+
     if (isFinished) {
       const finishMsg = d.match_summary?.summary || d.match_result || (d.winning_team ? `${d.winning_team} won` : "MATCH COMPLETED");
       currentState.matchStatus = finishMsg.toUpperCase();
+    } else if (isInningsBreak) {
+      if (d.match_summary && d.match_summary.target && d.match_summary.target !== '-') {
+        currentState.target = parseInt(d.match_summary.target, 10);
+      } else if (currentState.battingTeam.score > 0) {
+        currentState.target = currentState.battingTeam.score + 1;
+      }
+      currentState.matchStatus = `INNINGS BREAK • TARGET: ${currentState.target || ''}`.toUpperCase();
+
+      // Trigger automatic fetch for full scorecard if lists need to be populated
+      if (!currentState.teamScorecard || currentState.teamScorecard.length === 0 || !currentState.bowlingScorecard || currentState.bowlingScorecard.length === 0) {
+        fetchFullScorecardOnce(cleanMatchId);
+      }
     } else if (currentInning === 2 && d.match_summary) {
       const ms = d.match_summary;
       const targetStr = ms.target && ms.target !== '-' ? `TARGET: ${ms.target}` : "";
@@ -1041,19 +1269,45 @@
         }
       }
 
-      // Fallback: ONLY search scorecard array if we have NO active bowler yet
-      if (!bowlerFound && (!currentState.bowler || !currentState.bowler.name || currentState.bowler.name === "Bowler")) {
-        let allBowlers = [];
-        [batTeam, bowlTeam].forEach(team => {
-          if (team && Array.isArray(team.scorecard)) {
-            team.scorecard.forEach(sc => {
-              if (Array.isArray(sc.bowling)) allBowlers = allBowlers.concat(sc.bowling);
-            });
+      // Extract all bowlers for bowling scorecard table
+      let allBowlers = [];
+      [bowlTeam, batTeam].forEach(team => {
+        if (team && Array.isArray(team.scorecard)) {
+          team.scorecard.forEach(sc => {
+            if (Array.isArray(sc.bowling)) allBowlers = allBowlers.concat(sc.bowling);
+          });
+        }
+      });
+      if (Array.isArray(d.bowlers)) allBowlers = allBowlers.concat(d.bowlers);
+
+      if (allBowlers.length > 0) {
+        const seen = new Set();
+        currentState.bowlingScorecard = [];
+        allBowlers.forEach(b => {
+          if (b && (b.name || b.player_name)) {
+            const bName = b.name || b.player_name;
+            if (!seen.has(bName)) {
+              seen.add(bName);
+              const overs = String(b.overs || b.overs_bowled || "0.0");
+              const runs = parseInt(b.runs || b.runs_conceded || 0, 10);
+              let eco = String(b.economy_rate || b.economy || "0.00");
+              if (eco === "0.00" && parseFloat(overs) > 0) {
+                eco = (runs / parseFloat(overs)).toFixed(2);
+              }
+              currentState.bowlingScorecard.push({
+                name: bName,
+                overs: overs,
+                maidens: parseInt(b.maidens || b.maiden_overs || 0, 10),
+                runs: runs,
+                wickets: parseInt(b.wickets || b.wickets_taken || 0, 10),
+                economy: eco
+              });
+            }
           }
         });
 
-        if (allBowlers.length > 0) {
-          // Find bowlers with overs in the current spell
+        // Fallback: ONLY search scorecard array if we have NO active bowler yet
+        if (!bowlerFound && (!currentState.bowler || !currentState.bowler.name || currentState.bowler.name === "Bowler")) {
           const activeSpell = allBowlers.filter(b => parseFloat(b.overs || 0) > 0 || parseInt(b.balls || 0, 10) > 0);
           const currentBowler = activeSpell.length > 0 ? activeSpell[activeSpell.length - 1] : allBowlers[0];
           if (currentBowler) {
@@ -1127,6 +1381,10 @@
     triggerFour: (b) => triggerBoundaryEvent('four', b || ((currentState.batsmen && currentState.batsmen[0]) ? currentState.batsmen[0].name : '')),
     triggerSix: (b) => triggerBoundaryEvent('six', b || ((currentState.batsmen && currentState.batsmen[0]) ? currentState.batsmen[0].name : '')),
     triggerScorecard: () => triggerTeamScorecard(currentState),
+    triggerInningsBreak: () => {
+      currentState.isInningsBreak = !currentState.isInningsBreak;
+      renderOverlay(currentState);
+    },
     triggerOverSummary: (o) => triggerOverSummary(o || 2, currentState),
     setTheme: (t) => { document.body.className = `theme-${t}`; }
   };

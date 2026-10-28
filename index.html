@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title></title>
-  <link rel="stylesheet" href="overlay.css?v=3.7">
+  <link rel="stylesheet" href="overlay.css?v=3.8">
 </head>
 <body class="theme-ipl">
 
@@ -88,6 +88,86 @@
     <div class="scorecard-footer">
       <span>Current Partnership: <strong id="scorecard-partnership">52 (31)</strong></span>
       <span>Target: <strong>184</strong></span>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       4.6. INNINGS BREAK FULL SCORECARD CARD
+       ========================================== -->
+  <div id="innings-break-card">
+    <!-- Header Banner -->
+    <div class="ib-header">
+      <div class="ib-badge-row">
+        <div class="ib-badge">INNINGS BREAK</div>
+        <div class="ib-tournament" id="ib-tournament">T20 PREMIER CHAMPIONSHIP 2026</div>
+      </div>
+      <div class="ib-target-pill" id="ib-target-pill">TARGET: 145 RUNS</div>
+    </div>
+
+    <!-- Match Inning Summary Bar -->
+    <div class="ib-summary-bar">
+      <div class="ib-team-info">
+        <h2 id="ib-team-name">ETERNITY CRICKET CLUB</h2>
+        <div class="ib-team-score" id="ib-team-score">
+          <span class="score-highlight" id="ib-runs-score">144</span>/<span id="ib-wickets-score">8</span> <span class="ib-overs" id="ib-overs-score">(16.0 OVERS)</span>
+        </div>
+      </div>
+      <div class="ib-chase-target" id="ib-chase-target">
+        PUNE PANTHERS NEED 145 RUNS TO WIN • REQ. RR: 9.06
+      </div>
+    </div>
+
+    <!-- Two-Column Side-by-Side Tables -->
+    <div class="ib-tables-grid">
+      <!-- Left Column: Batting Card -->
+      <div class="ib-table-box batting">
+        <div class="ib-table-title">
+          <span>1ST INNINGS BATTING</span>
+        </div>
+        <table class="ib-table">
+          <thead>
+            <tr>
+              <th style="width:38%">Batsman</th>
+              <th style="text-align:right">R</th>
+              <th style="text-align:right">B</th>
+              <th style="text-align:right">4s</th>
+              <th style="text-align:right">6s</th>
+              <th style="text-align:right">SR</th>
+            </tr>
+          </thead>
+          <tbody id="ib-batting-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Right Column: Bowling Figures -->
+      <div class="ib-table-box bowling">
+        <div class="ib-table-title">
+          <span>BOWLING FIGURES</span>
+        </div>
+        <table class="ib-table">
+          <thead>
+            <tr>
+              <th style="width:42%">Bowler</th>
+              <th style="text-align:right">O</th>
+              <th style="text-align:right">M</th>
+              <th style="text-align:right">R</th>
+              <th style="text-align:right">W</th>
+              <th style="text-align:right">ECO</th>
+            </tr>
+          </thead>
+          <tbody id="ib-bowling-tbody">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Footer Extras & Status -->
+    <div class="ib-footer">
+      <div class="ib-extras" id="ib-extras">Extras: 14 (Wd 9, Nb 1, B 2, Lb 2)</div>
+      <div class="ib-status-tag" id="ib-status-tag">2ND INNINGS STARTING SOON</div>
     </div>
   </div>
 
@@ -239,6 +319,6 @@
 
   </div> <!-- End #overlay-root -->
 
-  <script src="overlay.js?v=3.7"></script>
+  <script src="overlay.js?v=3.8"></script>
 </body>
 </html>

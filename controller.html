@@ -103,6 +103,9 @@
         <button style="width:100%; margin-bottom:8px; background:#475569;" onclick="toggleUpcomingPreview()">
           Toggle Center Match Preview Card
         </button>
+        <button style="width:100%; margin-bottom:8px; background:linear-gradient(135deg, #b45309, #d97706); color:#fff; font-weight:700;" onclick="toggleInningsBreak()">
+          ☕ Toggle Innings Break Card
+        </button>
         <div style="display:flex; gap:8px; margin-bottom:8px;">
           <button style="flex:1;" class="btn-blue" onclick="triggerFourEvent()">
             FOUR! Alert
@@ -239,6 +242,13 @@
         state.toss = "TOSS PENDING";
         state.matchStatus = "MATCH STARTING SOON";
       }
+      iframe.contentWindow.postMessage({ type: 'UPDATE_OVERLAY_STATE', state: state }, '*');
+    }
+
+    function toggleInningsBreak() {
+      if (!iframe.contentWindow || !iframe.contentWindow.cricketOverlay) return;
+      const state = iframe.contentWindow.cricketOverlay.getState();
+      state.isInningsBreak = !state.isInningsBreak;
       iframe.contentWindow.postMessage({ type: 'UPDATE_OVERLAY_STATE', state: state }, '*');
     }
 
