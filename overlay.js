@@ -17,6 +17,21 @@
   // Apply theme to body
   document.body.className = `theme-${theme}`;
 
+  // --- 1.5. Dynamic Canvas Auto-Fit Engine (Mobile Prism, Tablets & PC OBS) ---
+  function autoFitCanvas() {
+    const w = window.innerWidth || document.documentElement.clientWidth || 1920;
+    const h = window.innerHeight || document.documentElement.clientHeight || 1080;
+    if (w <= 0 || h <= 0) return;
+    const scale = Math.min(w / 1920, h / 1080);
+    document.documentElement.style.setProperty('--overlay-scale', scale);
+  }
+  window.addEventListener('resize', autoFitCanvas);
+  window.addEventListener('orientationchange', autoFitCanvas);
+  autoFitCanvas();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', autoFitCanvas);
+  }
+
   // --- 2. State Tracking ---
   let previousState = {
     overs: 0,
@@ -462,8 +477,17 @@
       connectCricHeroesMQTT(cleanMatchId);
 
       // Pre-fetch match / upcoming metadata via proxy immediately + continuous sync
-      const pUrl = proxyUrl || '/proxy';
-      const fetchEndpoint = matchUrl ? `${pUrl}?url=${encodeURIComponent(matchUrl)}` : `${pUrl}?matchId=${cleanMatchId}`;
+      const pUrl = (proxyUrl || '/proxy').replace(/\/+$/, '');
+      let fetchEndpoint;
+      if (matchUrl) {
+        fetchEndpoint = pUrl.includes('?') ? `${pUrl}&url=${encodeURIComponent(matchUrl)}` : `${pUrl}?url=${encodeURIComponent(matchUrl)}`;
+      } else {
+        if (pUrl.includes('matchId=') || pUrl.includes('id=')) {
+          fetchEndpoint = pUrl;
+        } else {
+          fetchEndpoint = pUrl.includes('?') ? `${pUrl}&matchId=${cleanMatchId}` : `${pUrl}?matchId=${cleanMatchId}`;
+        }
+      }
 
       function syncMatchState() {
         fetch(fetchEndpoint)

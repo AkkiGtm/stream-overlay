@@ -9,6 +9,9 @@
   --font-main: 'Montserrat', sans-serif;
   --font-display: 'Teko', sans-serif;
   --anim-speed: 0.4s;
+  --scale-x: calc(100vw / 1920);
+  --scale-y: calc(100vh / 1080);
+  --overlay-scale: min(var(--scale-x), var(--scale-y));
 }
 
 * {
@@ -18,14 +21,34 @@
   -webkit-font-smoothing: antialiased;
 }
 
-body {
-  width: 100vw;
-  height: 100vh;
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   overflow: hidden;
   background: transparent !important;
   font-family: var(--font-main);
   position: relative;
   user-select: none;
+}
+
+/* =========================================================
+   MASTER 16:9 BROADCAST CANVAS AUTO-SCALER
+   Guarantees 100% pixel-perfect scaling on PRISM mobile,
+   tablets, OBS, and 1080p/720p/4K streams with NO cut-offs.
+   ========================================================= */
+
+#overlay-root {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  transform: translate(-50%, -50%) scale(var(--overlay-scale, 1));
+  transform-origin: center center;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 /* =========================================================
@@ -695,8 +718,8 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.92);
-  width: 1040px;
-  max-width: 92vw;
+  width: 1120px;
+  max-width: 1200px;
   background: var(--card-bg);
   border: 2px solid var(--accent-gold);
   border-radius: 18px;
@@ -831,6 +854,7 @@ body {
   letter-spacing: 0.5px;
   margin-bottom: 8px;
   line-height: 1.2;
+  white-space: nowrap;
 }
 
 /* Captain Badge */
@@ -964,6 +988,7 @@ body {
   font-weight: 700;
   color: var(--text-main);
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .footer-divider {

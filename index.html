@@ -2,11 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
-  <title>Cricket Broadcast Live Stream Overlay</title>
-  <link rel="stylesheet" href="overlay.css?v=3.2">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title></title>
+  <link rel="stylesheet" href="overlay.css?v=3.3">
 </head>
 <body class="theme-ipl">
+
+  <!-- Master 16:9 Broadcast Canvas Wrapper (Scales to any device/Prism resolution) -->
+  <div id="overlay-root">
 
   <!-- ==========================================
        1. WICKET STINGER (OUT ALERT)
@@ -233,6 +236,8 @@
     </div>
   </div>
 
-  <script src="overlay.js?v=3.2"></script>
+  </div> <!-- End #overlay-root -->
+
+  <script src="overlay.js?v=3.3"></script>
 </body>
 </html>
