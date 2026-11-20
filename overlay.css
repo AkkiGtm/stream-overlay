@@ -53,20 +53,22 @@ html, body {
 }
 
 /* =========================================================
-   THEME DEFINITIONS
+   THEME DEFINITIONS (WITH ELEGANT BROADCAST TRANSPARENCY)
+   Backgrounds use frosted-glass alpha while scores and
+   stats remain 100% opaque, bright, and crystal clear.
    ========================================================= */
 
 /* 1. THEME: IPL Modern Broadcast (Navy & Gold) */
 .theme-ipl {
-  --bg-primary: #0a192f;
-  --bg-secondary: #132f58;
+  --bg-primary: rgba(10, 25, 47, 0.84);
+  --bg-secondary: rgba(19, 47, 88, 0.84);
   --accent-gold: #f59e0b;
   --accent-red: #ef4444;
   --accent-cyan: #38bdf8;
   --text-main: #ffffff;
-  --text-muted: #94a3b8;
-  --border-glow: rgba(245, 158, 11, 0.4);
-  --card-bg: rgba(10, 25, 47, 0.95);
+  --text-muted: #cbd5e1;
+  --border-glow: rgba(245, 158, 11, 0.45);
+  --card-bg: rgba(10, 25, 47, 0.88);
   --ticker-border: 2px solid #f59e0b;
   --badge-bg: #f59e0b;
   --badge-text: #0a192f;
@@ -74,15 +76,15 @@ html, body {
 
 /* 2. THEME: Dark Neon Cyber (Esports Style) */
 .theme-neon {
-  --bg-primary: #090d16;
-  --bg-secondary: #121a2d;
+  --bg-primary: rgba(9, 13, 22, 0.84);
+  --bg-secondary: rgba(18, 26, 45, 0.84);
   --accent-gold: #06b6d4;
   --accent-red: #f43f5e;
   --accent-cyan: #a855f7;
   --text-main: #f8fafc;
-  --text-muted: #64748b;
+  --text-muted: #94a3b8;
   --border-glow: rgba(6, 182, 212, 0.6);
-  --card-bg: rgba(9, 13, 22, 0.94);
+  --card-bg: rgba(9, 13, 22, 0.88);
   --ticker-border: 2px solid #06b6d4;
   --badge-bg: #06b6d4;
   --badge-text: #020617;
@@ -90,43 +92,80 @@ html, body {
 
 /* 3. THEME: Classic TV (Clean White & Slate) */
 .theme-classic {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f1f5f9;
+  --bg-primary: rgba(255, 255, 255, 0.88);
+  --bg-secondary: rgba(241, 245, 249, 0.88);
   --accent-gold: #881337; /* Deep Maroon */
   --accent-red: #dc2626;
   --accent-cyan: #0284c7;
   --text-main: #0f172a;
-  --text-muted: #64748b;
-  --border-glow: rgba(0, 0, 0, 0.15);
-  --card-bg: rgba(255, 255, 255, 0.98);
+  --text-muted: #475569;
+  --border-glow: rgba(0, 0, 0, 0.2);
+  --card-bg: rgba(255, 255, 255, 0.92);
   --ticker-border: 2px solid #881337;
   --badge-bg: #881337;
   --badge-text: #ffffff;
 }
 
+/* 4. THEME: Ocean (Light Blue / Aqua Sky) */
+.theme-ocean {
+  --bg-primary: rgba(8, 32, 54, 0.84);
+  --bg-secondary: rgba(14, 58, 96, 0.84);
+  --accent-gold: #38bdf8; /* Light Sky Blue */
+  --accent-red: #f43f5e;
+  --accent-cyan: #7dd3fc;
+  --text-main: #ffffff;
+  --text-muted: #bae6fd;
+  --border-glow: rgba(56, 189, 248, 0.55);
+  --card-bg: rgba(8, 32, 54, 0.88);
+  --ticker-border: 2px solid #38bdf8;
+  --badge-bg: #38bdf8;
+  --badge-text: #082f49;
+}
+
+/* 5. THEME: Paltan (Fiery Red & Gold) */
+.theme-paltan {
+  --bg-primary: rgba(28, 8, 12, 0.85);
+  --bg-secondary: rgba(68, 14, 22, 0.85);
+  --accent-gold: #ef4444; /* Vivid Crimson Red */
+  --accent-red: #b91c1c;
+  --accent-cyan: #facc15; /* Warm Gold */
+  --text-main: #ffffff;
+  --text-muted: #fca5a5;
+  --border-glow: rgba(239, 68, 68, 0.55);
+  --card-bg: rgba(28, 8, 12, 0.90);
+  --ticker-border: 2px solid #ef4444;
+  --badge-bg: #ef4444;
+  --badge-text: #ffffff;
+}
+
 /* =========================================================
-   MAIN LOWER-THIRD SCOREBOARD TICKER (100% FULL-WIDTH EDGE-TO-EDGE)
+   MAIN LOWER-THIRD SCOREBOARD TICKER
+   Floating with broadcast margins, rounded corners, and
+   frosted-glass backdrop-filter so camera video peeks through.
    ========================================================= */
 
 #scoreboard-container {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  max-width: 100%;
-  transform: none;
+  position: fixed;
+  bottom: 14px;
+  left: 18px;
+  width: calc(100% - 36px);
+  max-width: calc(100% - 36px);
+  margin: 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 0;
   z-index: 100;
-  border-radius: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.65), 0 0 20px var(--border-glow);
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #scoreboard-container.hidden {
   opacity: 0;
   pointer-events: none;
-  transform: translateY(160px);
+  transform: translateY(180px);
 }
 
 /* Upper Mini Banner (Tournament name / Equation) */
@@ -137,14 +176,14 @@ html, body {
   background: var(--bg-primary);
   border-top: 2px solid var(--accent-gold);
   border-left: none;
-  padding: 8px 36px;
-  border-radius: 0;
+  padding: 8px 32px;
   color: var(--text-main);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .subbar-right {
@@ -160,14 +199,13 @@ html, body {
   display: grid;
   grid-template-columns: 360px 1fr 340px;
   background: var(--bg-primary);
-  border-top: 3px solid var(--accent-gold);
+  border-top: 2px solid rgba(255, 255, 255, 0.12);
   border-left: none;
   border-right: none;
   border-bottom: none;
-  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   min-height: 105px;
 }
 
