@@ -9,9 +9,6 @@
   --font-main: 'Montserrat', sans-serif;
   --font-display: 'Teko', sans-serif;
   --anim-speed: 0.4s;
-  --scale-x: calc(100vw / 1920);
-  --scale-y: calc(100vh / 1080);
-  --overlay-scale: min(var(--scale-x), var(--scale-y));
 }
 
 * {
@@ -22,7 +19,9 @@
 }
 
 html, body {
+  width: 100vw;
   width: 100%;
+  height: 100vh;
   height: 100%;
   margin: 0;
   padding: 0;
@@ -34,19 +33,21 @@ html, body {
 }
 
 /* =========================================================
-   MASTER 16:9 BROADCAST CANVAS AUTO-SCALER
-   Guarantees 100% pixel-perfect scaling on PRISM mobile,
-   tablets, OBS, and 1080p/720p/4K streams with NO cut-offs.
+   MASTER FULL-SCREEN BROADCAST VIEWPORT (100% EDGE-TO-EDGE)
+   Spans 100% of the screen width and height on any browser,
+   OBS canvas, or mobile Prism Live Studio without letterboxing.
    ========================================================= */
 
 #overlay-root {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1920px;
-  height: 1080px;
-  transform: translate(-50%, -50%) scale(var(--overlay-scale, 1));
-  transform-origin: center center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  width: 100%;
+  height: 100vh;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   pointer-events: none;
   overflow: hidden;
 }
@@ -104,27 +105,28 @@ html, body {
 }
 
 /* =========================================================
-   MAIN LOWER-THIRD SCOREBOARD TICKER
+   MAIN LOWER-THIRD SCOREBOARD TICKER (100% FULL-WIDTH EDGE-TO-EDGE)
    ========================================================= */
 
 #scoreboard-container {
   position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 95%;
-  max-width: 1400px;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  max-width: 100%;
+  transform: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0;
   z-index: 100;
+  border-radius: 0;
   transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #scoreboard-container.hidden {
   opacity: 0;
   pointer-events: none;
-  transform: translateX(-50%) translateY(140px);
+  transform: translateY(160px);
 }
 
 /* Upper Mini Banner (Tournament name / Equation) */
@@ -133,33 +135,40 @@ html, body {
   justify-content: space-between;
   align-items: center;
   background: var(--bg-primary);
-  border-left: 4px solid var(--accent-gold);
-  padding: 4px 16px;
-  border-radius: 4px;
+  border-top: 2px solid var(--accent-gold);
+  border-left: none;
+  padding: 8px 36px;
+  border-radius: 0;
   color: var(--text-main);
-  font-size: 13px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
   box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .subbar-right {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   color: var(--accent-gold);
+  font-size: 16px;
+  font-weight: 800;
 }
 
 /* Main Horizontal Ticker Bar */
 .ticker-main {
   display: grid;
-  grid-template-columns: 240px 1fr 220px;
+  grid-template-columns: 360px 1fr 340px;
   background: var(--bg-primary);
-  border: var(--ticker-border);
-  border-radius: 8px;
+  border-top: 3px solid var(--accent-gold);
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  border-radius: 0;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(8px);
+  min-height: 105px;
 }
 
 /* Left Section: Team & Live Score */
@@ -167,21 +176,21 @@ html, body {
   background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
   display: flex;
   align-items: center;
-  padding: 10px 16px;
-  gap: 12px;
-  border-right: 2px solid rgba(255, 255, 255, 0.1);
+  padding: 12px 28px;
+  gap: 18px;
+  border-right: 2px solid rgba(255, 255, 255, 0.12);
 }
 
 .team-badge {
   background: var(--badge-bg);
   color: var(--badge-text);
   font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 4px;
+  font-size: 40px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: 6px;
   line-height: 1;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
 }
 
 .score-details {
@@ -191,13 +200,13 @@ html, body {
 
 .score-num {
   font-family: var(--font-display);
-  font-size: 42px;
+  font-size: 64px;
   line-height: 0.9;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 8px;
 }
 
 .score-num .score-highlight {
@@ -205,44 +214,45 @@ html, body {
 }
 
 .overs-num {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--text-muted);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.8px;
   margin-top: 4px;
 }
 
 /* Center Section: Batsmen & Bowler Details */
 .section-players {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 8px 16px;
-  gap: 16px;
+  grid-template-columns: 1.15fr 0.85fr;
+  padding: 12px 32px;
+  gap: 28px;
   align-items: center;
 }
 
 .batsmen-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  padding-right: 12px;
+  gap: 8px;
+  border-right: 2px solid rgba(255, 255, 255, 0.1);
+  padding-right: 20px;
 }
 
 .player-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 14px;
+  font-size: 22px;
   color: var(--text-main);
 }
 
 .player-name {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 22px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  max-width: 170px;
+  gap: 6px;
+  max-width: 340px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -251,41 +261,43 @@ html, body {
 .player-name.is-striker::after {
   content: "★";
   color: var(--accent-gold);
-  font-size: 12px;
-  margin-left: 2px;
+  font-size: 18px;
+  margin-left: 4px;
 }
 
 .player-stats {
   font-family: var(--font-display);
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
   color: var(--accent-gold);
 }
 
 .player-stats span.sub {
   font-family: var(--font-main);
-  font-size: 12px;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-muted);
 }
 
 .bowler-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .bowler-label {
-  font-size: 11px;
+  font-size: 13px;
   text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
 .bowler-stats {
   font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 800;
   color: var(--text-main);
 }
 
@@ -295,35 +307,35 @@ html, body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 8px 14px;
+  padding: 10px 24px;
   background: rgba(0, 0, 0, 0.25);
-  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
 }
 
 .this-over-label {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 6px;
-  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
 }
 
 .ball-pills-row {
   display: flex;
-  gap: 5px;
+  gap: 7px;
   align-items: center;
-  min-height: 26px;
+  min-height: 40px;
 }
 
 .ball-pill {
-  width: 26px;
-  height: 26px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 20px;
   font-weight: 800;
   font-family: var(--font-display);
   background: rgba(255, 255, 255, 0.12);
@@ -332,15 +344,15 @@ html, body {
 }
 
 .ball-pill.dot { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
-.ball-pill.four { background: #2563eb; color: #fff; font-size: 15px; font-weight: 900; }
-.ball-pill.six { background: #7c3aed; color: #fff; font-size: 15px; font-weight: 900; }
+.ball-pill.four { background: #2563eb; color: #fff; font-size: 22px; font-weight: 900; }
+.ball-pill.six { background: #7c3aed; color: #fff; font-size: 22px; font-weight: 900; }
 .ball-pill.wicket { background: #dc2626; color: #fff; font-weight: 900; animation: pulseRed 1.5s infinite; }
-.ball-pill.extra { background: #ea580c; color: #fff; font-size: 11px; }
+.ball-pill.extra { background: #ea580c; color: #fff; font-size: 15px; }
 .ball-pill.empty {
   background: rgba(255, 255, 255, 0.04);
   color: rgba(255, 255, 255, 0.22);
   border: 1px dashed rgba(255, 255, 255, 0.18);
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1;
 }
 
@@ -355,15 +367,15 @@ html, body {
 
 #over-summary-card {
   position: absolute;
-  bottom: 120px;
-  left: 36px;
+  bottom: 155px;
+  left: 40px;
   background: var(--card-bg);
   border: 2px solid var(--accent-gold);
   border-radius: 14px;
-  padding: 22px 32px;
+  padding: 24px 36px;
   color: var(--text-main);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
-  min-width: 520px;
+  min-width: 560px;
   z-index: 150;
   opacity: 0;
   transform: translateY(30px) scale(0.95);
@@ -382,13 +394,13 @@ html, body {
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid var(--accent-gold);
-  padding-bottom: 10px;
-  margin-bottom: 14px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .card-title {
   font-family: var(--font-display);
-  font-size: 30px;
+  font-size: 38px;
   color: var(--accent-gold);
   letter-spacing: 1px;
 }
@@ -397,15 +409,15 @@ html, body {
   background: var(--accent-gold);
   color: var(--bg-primary);
   font-weight: 800;
-  font-size: 14px;
-  padding: 4px 12px;
+  font-size: 16px;
+  padding: 4px 14px;
   border-radius: 6px;
 }
 
 .over-stat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
 .stat-item {
@@ -414,7 +426,7 @@ html, body {
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--text-muted);
   text-transform: uppercase;
   font-weight: 700;
@@ -423,7 +435,7 @@ html, body {
 
 .stat-val {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 800;
   color: var(--text-main);
 }
@@ -437,14 +449,15 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%) scale(0.95);
-  width: calc(100% - 100px);
-  max-width: 1780px;
-  max-height: 920px;
+  width: min(92vw, 1600px);
+  min-height: 580px;
+  max-height: 88vh;
+  overflow-y: auto;
   background: var(--card-bg);
   border: 3px solid var(--accent-gold);
   border-radius: 20px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95), 0 0 45px rgba(245, 158, 11, 0.3);
-  padding: 32px 48px;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.95), 0 0 50px rgba(245, 158, 11, 0.35);
+  padding: 36px 48px;
   color: var(--text-main);
   z-index: 200;
   opacity: 0;
@@ -462,83 +475,103 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
-  padding-bottom: 16px;
-  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .scorecard-header h2 {
   font-family: var(--font-display);
-  font-size: 46px;
+  font-size: 64px;
   color: var(--accent-gold);
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   margin: 0;
+  line-height: 1;
 }
 
-.scorecard-header small {
-  font-size: 18px;
+.scorecard-header small,
+.scorecard-header .scorecard-subhead {
+  font-size: 22px;
+  font-weight: 700;
   color: var(--text-muted);
+  letter-spacing: 1px;
 }
 
 .scorecard-header .score-pill {
   background: var(--bg-secondary);
   border: 2px solid var(--accent-gold);
-  padding: 10px 28px;
-  border-radius: 10px;
+  padding: 12px 34px;
+  border-radius: 12px;
   font-family: var(--font-display);
-  font-size: 34px;
+  font-size: 44px;
   font-weight: 800;
   color: #fff;
+  letter-spacing: 1px;
 }
 
 .scorecard-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 26px;
 }
 
 .scorecard-table th {
   text-align: left;
-  font-size: 16px;
+  font-size: 22px;
   font-weight: 800;
   text-transform: uppercase;
   color: var(--text-muted);
-  padding: 10px 14px;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  padding: 14px 18px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  letter-spacing: 1px;
 }
 
 .scorecard-table td {
-  padding: 12px 14px;
+  padding: 22px 18px;
+  font-size: 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.scorecard-table td strong {
+  font-size: 30px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.scorecard-table td small {
   font-size: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  display: inline-block;
+  margin-top: 4px;
 }
 
 .scorecard-table tr.active-batsman {
-  background: rgba(245, 158, 11, 0.15);
+  background: rgba(245, 158, 11, 0.2);
   font-weight: 700;
 }
 
 .scorecard-table td.stat-num {
   font-family: var(--font-display);
-  font-size: 24px;
+  font-size: 38px;
   text-align: right;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .scorecard-footer {
   display: flex;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 16px 24px;
-  border-radius: 10px;
-  font-size: 18px;
-  font-weight: 600;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 20px 32px;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .scorecard-footer span strong {
-  color: var(--text-main);
-  font-size: 20px;
+  color: var(--accent-gold);
+  font-size: 26px;
 }
 
 /* =========================================================
