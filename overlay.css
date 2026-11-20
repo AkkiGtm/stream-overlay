@@ -1314,3 +1314,162 @@ html, body {
   height: 36px;
   background: rgba(255, 255, 255, 0.1);
 }
+
+/* =========================================================
+   MOBILE LANDSCAPE RESPONSIVE OPTIMIZATION
+   When viewed on mobile screens / webviews (height <= 550px
+   such as iPhone 16 Pro Max at 956x440):
+   Automatically compacts the ticker to ~64px height so it
+   occupies only ~14% of the bottom, leaving 86% of the screen
+   for the live cricket video without any text wrapping!
+   ========================================================= */
+@media (max-height: 550px) {
+  #scoreboard-container {
+    bottom: 8px;
+    left: 10px;
+    width: calc(100% - 20px);
+    max-width: calc(100% - 20px);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.65);
+  }
+
+  .ticker-subbar {
+    padding: 4px 16px;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    border-top: 1.5px solid var(--accent-gold);
+  }
+
+  .subbar-right {
+    gap: 12px;
+    font-size: 11px;
+  }
+
+  .ticker-main {
+    grid-template-columns: 200px 1fr 190px;
+    min-height: 62px;
+  }
+
+  .section-score {
+    padding: 6px 12px;
+    gap: 10px;
+  }
+
+  .team-badge {
+    font-size: 24px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .score-num {
+    font-family: var(--font-display);
+    font-size: 38px;
+    line-height: 0.9;
+    gap: 4px;
+  }
+
+  .overs-num {
+    font-size: 12px;
+    margin-top: 1px;
+  }
+
+  .section-players {
+    grid-template-columns: 1.15fr 0.85fr;
+    padding: 6px 14px;
+    gap: 14px;
+  }
+
+  .batsmen-group {
+    gap: 2px;
+    padding-right: 10px;
+  }
+
+  .player-row {
+    font-size: 13px;
+  }
+
+  .player-name {
+    font-size: 13px;
+    max-width: 170px;
+    gap: 4px;
+  }
+
+  .player-name.is-striker::after {
+    font-size: 11px;
+  }
+
+  .player-stats {
+    font-size: 19px;
+  }
+
+  .player-stats span.sub {
+    font-size: 11px;
+  }
+
+  .bowler-group {
+    gap: 2px;
+  }
+
+  .bowler-label {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+  }
+
+  .bowler-stats {
+    font-size: 19px;
+  }
+
+  .section-this-over {
+    padding: 6px 12px;
+  }
+
+  .this-over-label {
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+  }
+
+  .ball-pills-row {
+    gap: 4px;
+    min-height: 22px;
+  }
+
+  .ball-pill {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+  }
+
+  /* Popups on mobile landscape */
+  #over-summary-card {
+    bottom: 80px;
+    left: 12px;
+    min-width: 300px;
+    padding: 12px 18px;
+    border-radius: 8px;
+  }
+
+  .card-title { font-size: 20px; }
+  .card-badge { font-size: 11px; padding: 2px 8px; }
+  .stat-label { font-size: 10px; }
+  .stat-val { font-size: 22px; }
+
+  #team-scorecard-modal {
+    width: min(96vw, 860px);
+    min-height: 280px;
+    max-height: 88vh;
+    padding: 16px 20px;
+    border-radius: 12px;
+  }
+
+  .scorecard-header h2 { font-size: 30px; }
+  .scorecard-header .score-pill { font-size: 22px; padding: 6px 16px; }
+  .scorecard-header small, .scorecard-header .scorecard-subhead { font-size: 12px; }
+  .scorecard-table th { font-size: 12px; padding: 6px 10px; }
+  .scorecard-table td { padding: 8px 10px; font-size: 13px; }
+  .scorecard-table td strong { font-size: 14px; }
+  .scorecard-table td small { font-size: 11px; }
+  .scorecard-table td.stat-num { font-size: 18px; }
+  .scorecard-footer { padding: 8px 14px; font-size: 12px; }
+  .scorecard-footer span strong { font-size: 13px; }
+}
