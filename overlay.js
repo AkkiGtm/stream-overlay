@@ -330,13 +330,25 @@
       } else {
         els.thisOverPills.innerHTML = state.thisOver.map(ball => {
           let pillClass = "ball-pill";
-          const b = String(ball).toUpperCase();
-          if (b === "0" || b === "•") pillClass += " dot";
-          else if (b === "4") pillClass += " four";
-          else if (b === "6") pillClass += " six";
-          else if (b.includes("W") && !b.includes("WD")) pillClass += " wicket";
-          else if (b.includes("WD") || b.includes("NB")) pillClass += " extra";
-          return `<div class="${pillClass}">${b}</div>`;
+          let b = String(ball).toUpperCase().trim();
+          let label = b;
+
+          if (b === "0" || b === "•") {
+            pillClass += " dot";
+            label = "•";
+          } else if (b === "4") {
+            pillClass += " four";
+          } else if (b === "6") {
+            pillClass += " six";
+          } else if (b.includes("W") && !b.includes("WD")) {
+            pillClass += " wicket";
+            label = "W";
+          } else if (b.includes("WD") || b.includes("NB")) {
+            pillClass += " extra";
+            if (b === "0WD") label = "WD";
+            else if (b === "0NB") label = "NB";
+          }
+          return `<div class="${pillClass}">${label}</div>`;
         }).join('');
       }
     }
